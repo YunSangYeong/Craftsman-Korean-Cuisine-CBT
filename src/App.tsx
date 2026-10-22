@@ -156,6 +156,7 @@ function Source({ q }: { q: Question }) {
   return (
     <div className="source">
       <span className="tag">{TYPE_LABEL[q.type]}</span>
+      {q.family && <span className="tag">숫자 조건 변형</span>}
       <span>
         {q.year
           ? `${q.year}년 ${q.session ? `${q.session}회차` : ""}`
@@ -872,6 +873,9 @@ function App() {
                       bank.filter((q) => q.verificationStatus === "reviewed")
                         .length
                     }
+                    {" · 개념 "}{bank.filter(q => !q.calculation).length}
+                    {" · 계산 조건 변형 "}{bank.filter(q => q.calculation).length}
+                    {" ("}{new Set(bank.filter(q => q.family).map(q => q.family)).size}{"유형)"}
                   </p>
                 </div>
                 <button
@@ -1784,7 +1788,7 @@ function BankManager({
           <br />
           원문 기출 0 · 복원문제 0. 공식 자료 접근 제한으로 기출 원문 및
           출제기준 대조는 완료하지 못했습니다. 기본 문항은 AI 일반 지식에 근거해 본문·보기·정답·해설 내부 대조를 했습니다.
-          외부 전문가 검수와 공식 출제기준 대조는 미완료입니다. 목표 {QUALIFICATION.targetReviewedCount}개 대비 {QUALIFICATION.targetReviewedCount - BASE_BANK.length}개 부족합니다.
+          외부 전문가 검수와 공식 출제기준 대조는 미완료입니다. 목표 {QUALIFICATION.targetReviewedCount}개, 실제 {BASE_BANK.length}개, 부족 {Math.max(0, QUALIFICATION.targetReviewedCount - BASE_BANK.length)}개입니다. 개념 {BASE_BANK.filter(q => !q.calculation).length}개와 숫자 조건 변형 {BASE_BANK.filter(q => q.calculation).length}개({new Set(BASE_BANK.filter(q => q.family).map(q => q.family)).size}유형)로 구성됩니다. 계산 문항은 별도 경로로 전수 재계산했습니다.
           학습용 규칙: 통합 60문항·60분·4지선다·60점 합격·과락 없음. Q-Net 원문 확인 대기입니다.
         </div>
       </div>

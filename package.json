@@ -7,9 +7,11 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run",
+    "test": "npm run data:check && vitest run",
     "test:e2e": "npm run build && playwright test",
-    "check": "npm run test && npm run build"
+    "check": "npm run test && npm run build",
+    "data:generate": "python3 scripts/create-bank.py",
+    "data:check": "python3 scripts/create-bank.py --check"
   },
   "dependencies": {
     "react": "^19.2.0",

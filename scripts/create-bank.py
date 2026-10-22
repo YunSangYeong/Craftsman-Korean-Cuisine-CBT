@@ -1,4 +1,4 @@
-"""Deterministic original concept questions; no scraped or claimed past questions."""
+"""Deterministic culinary bank: 200 concept questions and 800 disclosed numeric variants."""
 import json
 from pathlib import Path
 # stem | correct | distractor 1 | distractor 2 | distractor 3 | explanation
@@ -77,4 +77,43 @@ for topic,text in sections.items():
   i=len(questions); choices=[correct,*distractors]; shift=i%4; choices=choices[shift:]+choices[:shift]
   questions.append(dict(id=f'KC-{i+1:03}',subject='한식 재료관리, 음식조리 및 위생관리',topic=topic,question=stem,choices=choices,answer=choices.index(correct)+1,explanation=explanation,difficulty='하',year=None,session=None,type='original',sourceUrl='https://github.com/YunSangYeong/Craftsman-Korean-Cuisine-CBT/blob/main/scripts/create-bank.py',verificationStatus='reviewed',reviewNote='AI 일반 조리 지식에 기반한 자체 제작. 본문·보기·정답·해설 내부 대조 및 중복 검토. 공식 출제기준 대조·외부 전문가 검수 미완료. 법정 수치 미사용.',version='main',rights='이 프로젝트 자체 제작 문항 · CC BY 4.0'))
 assert len(questions)==60
-Path('src/data/questions-main.json').write_text(json.dumps(questions,ensure_ascii=False,indent=2)+'\n')
+# Existing 60 records above are intentionally unchanged for stored learning history.
+for line in Path('scripts/concepts-extra.txt').read_text().splitlines():
+ if not line or line.startswith('#'): continue
+ topic,stem,correct,d1,d2,d3,explanation=line.split('|')
+ i=len(questions); choices=[correct,d1,d2,d3]; shift=i%4; choices=choices[shift:]+choices[:shift]
+ questions.append(dict(id=f'KC-{i+1:03}',subject=questions[0]['subject'],topic=topic,question=stem,choices=choices,answer=choices.index(correct)+1,explanation=explanation,difficulty='중',year=None,session=None,type='original',sourceUrl='https://github.com/YunSangYeong/Craftsman-Korean-Cuisine-CBT/blob/feat/korean-cuisine-cbt/scripts/concepts-extra.txt',verificationStatus='reviewed',reviewNote='AI 일반 지식 기반 자체 제작. 본문·보기·정답·해설 내부 대조. 공식 출제기준 대조·외부 전문가 검수 미완료. 법정 수치 미사용.',version='main',rights='이 프로젝트 자체 제작 문항 · CC BY 4.0'))
+assert len(questions)==200
+from calculation_families import rows, rounded, fmt
+from fractions import Fraction as F
+calc=list(rows()); kinds=list(dict.fromkeys(r[1] for r in calc))
+assert len(kinds)==40 and len(calc)==800
+# Family-major stable IDs: twenty conditions per context, no random seed required.
+calc.sort(key=lambda r:(kinds.index(r[1]),r[0]))
+for variant,kind,name,unit,values,result,prompt,formula in calc:
+ value=rounded(result)
+ # Distractors are deliberately distinct rounded values, not equivalent unit forms.
+ candidates=[value,rounded(F(result)*F(4,5)),rounded(F(result)*F(6,5)),rounded(F(result)+3)]
+ for j in range(1,len(candidates)):
+  while candidates[j]<=0 or candidates[j] in candidates[:j]: candidates[j]+=1
+ choices=[f'{v:.2f} {unit}' for v in candidates]
+ i=len(questions); shift=i%4; choices=choices[shift:]+choices[:shift]
+ correct=f'{value:.2f} {unit}'
+ topics={'recipe':'배합·수율 계산','edible':'배합·수율 계산','purchase':'배합·수율 계산','edibleRate':'배합·수율 계산','wasteRate':'배합·수율 계산','cooked':'배합·수율 계산','cookingRate':'배합·수율 계산','rehydration':'배합·수율 계산','energy':'영양 계산','proteinEnergy':'영양 계산','nutrient':'영양 계산','dryMatter':'농도·수분 계산','waterForSolids':'농도·수분 계산','saltAddition':'농도·수분 계산','dilution':'농도·수분 계산','mixture':'농도·수분 계산','sugar':'농도·수분 계산','evaporation':'농도·수분 계산','cost':'원가·발주 계산','edibleCost':'원가·발주 계산','portionCost':'원가·발주 계산','costRate':'원가·발주 계산','salePrice':'원가·발주 계산','materialMargin':'원가·발주 계산','order':'원가·발주 계산','packages':'원가·발주 계산','servings':'원가·발주 계산','wasteCost':'원가·발주 계산','retention':'영양 계산','waterGain':'배합·수율 계산','ratio':'배합·수율 계산','baker':'배합·수율 계산','density':'조리 공정 계산','heat':'조리 공정 계산','efficiency':'조리 공정 계산','electricCost':'조리 공정 계산','coolingRate':'조리 공정 계산','sequential':'배합·수율 계산','sodium':'영양 계산','replacement':'영양 계산'}
+ explanation=f'{name}: {formula} = {value:.2f} {unit}. 제시된 조건과 단위로 계산합니다. 분수 계산값은 마지막에 소수 둘째 자리까지 반올림합니다. 포장 수는 부족하지 않게 정수 올림, 완전 인분 수는 정수 버림입니다. 수치는 연습용 가정이며 실제 식품 성분·제품 성능·법정 기준을 제시한 것이 아닙니다.'
+ questions.append(dict(id=f'KC-{i+1:03}',subject=questions[0]['subject'],topic=topics[kind],question=prompt+' 모든 보기는 소수 둘째 자리까지 표시하며, 필요한 경우 마지막에 반올림한다.',choices=choices,answer=choices.index(correct)+1,explanation=explanation,difficulty='중',year=None,session=None,type='original',sourceUrl='https://github.com/YunSangYeong/Craftsman-Korean-Cuisine-CBT/blob/feat/korean-cuisine-cbt/scripts/calculation_families.py',verificationStatus='reviewed',reviewNote='자체 제작 계산 조건 변형. 식·조건·단위·보기 내부 대조 및 별도 경로 전수 재계산. 공식 출제기준 대조·외부 전문가 검수 미완료. 수치는 명시한 연습용 가정.',version='main',rights='이 프로젝트 자체 제작 문항 · CC BY 4.0',family=f'KC-CALC-{kind}',calculation=dict(kind=kind,values=[float(v) for v in values],result=float(value),unit=unit,precision=2)))
+assert len(questions)==1000
+assert len({q['id'] for q in questions})==1000
+import re, sys, unicodedata
+fingerprints=[]
+for q in questions:
+ text='|'.join([q['question'],*sorted(q['choices'])])
+ fingerprints.append(re.sub(r'\s+','',unicodedata.normalize('NFKC',text)).lower())
+assert len(set(fingerprints))==1000, 'Normalized duplicate question'
+output=json.dumps(questions,ensure_ascii=False,indent=2)+'\n'
+path=Path('src/data/questions-main.json')
+if '--check' in sys.argv:
+ if path.read_text()!=output: raise SystemExit('Question JSON differs from manuscript; regenerate and review.')
+ print('문제은행 재현성 검증: 1000개, 정규화 중복 0, 원고와 JSON 일치')
+else:
+ path.write_text(output)

@@ -21,3 +21,28 @@ test('저장 실패 경고 유지',async({page})=>{
   await page.getByRole('button',{name:'문제풀이 시작하기',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('기록을 저장하지 못했습니다');
 });
+
+// Functional check of the served public bank rather than a source-only count.
+test('1000문항 구성 공개·계산 출처·전체 JSON 내보내기',async({page})=>{
+  await page.goto('');
+  await expect(page.locator('.bank-summary')).toContainText('등록 1000문항');
+  await expect(page.locator('.bank-summary')).toContainText('개념 200');
+  await expect(page.locator('.bank-summary')).toContainText('계산 조건 변형 800 (40유형)');
+  const opener=page.getByRole('button',{name:'메뉴 열기'});
+  if(await opener.isVisible()) await opener.click();
+  await page.getByRole('navigation').getByRole('button',{name:'문제은행 관리',exact:true}).click();
+  await expect(page.locator('.pagination')).toContainText('1 / 50');
+  await expect(page.locator('main .notice')).toContainText('실제 1000개, 부족 0개');
+  await page.getByLabel('문항 검색',{exact:true}).fill('KC-201');
+  await expect(page.locator('.bank-row')).toHaveCount(1);
+  await page.locator('.bank-row summary').click();
+  await expect(page.locator('.bank-row')).toContainText('숫자 조건 변형');
+  await expect(page.locator('.bank-row .explanation')).toContainText('750.00 g');
+  const downloading=page.waitForEvent('download');
+  await page.getByRole('button',{name:'전체 문항 내보내기',exact:true}).click();
+  const download=await downloading; const stream=await download.createReadStream();
+  const buffers:Buffer[]=[];for await(const chunk of stream!) buffers.push(Buffer.from(chunk));
+  const bank=JSON.parse(Buffer.concat(buffers).toString('utf8'));
+  expect(bank).toHaveLength(1000);
+  expect(bank.filter((q:{calculation?:unknown})=>q.calculation)).toHaveLength(800);
+});

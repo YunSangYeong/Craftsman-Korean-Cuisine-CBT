@@ -20,16 +20,16 @@ import {
 } from "../src/model";
 const bank = BASE_BANK;
 describe("한식 문제은행 품질", () => {
-  it("실제 등록 60개·정규화 중복 없음·보기/출처/검수 상태 검증", () => {
-    expect(bank).toHaveLength(60);
-    expect(new Set(bank.map(q => q.id)).size).toBe(60);
-    expect(new Set(bank.map(fingerprint)).size).toBe(60);
+  it("실제 등록 1,000개·정규화 중복 없음·보기/출처/검수 상태 검증", () => {
+    expect(bank).toHaveLength(1000);
+    expect(new Set(bank.map(q => q.id)).size).toBe(1000);
+    expect(new Set(bank.map(fingerprint)).size).toBe(1000);
     for (const q of bank) {
       expect(() => validateQuestion(q)).not.toThrow();
       expect(q.verificationStatus).toBe("reviewed");
       expect(q.type).toBe("original");
       expect(q.year).toBeNull(); expect(q.session).toBeNull();
-      expect(q.family).toBeUndefined();
+      if (!q.calculation) expect(q.family).toBeUndefined();
       expect(q.reviewNote).toContain("외부 전문가 검수 미완료");
     }
   });
@@ -124,12 +124,12 @@ describe("랜덤 학습", () => {
   it("한 과목의 모든 문항을 순회하기 전에는 중복이 없다", () => {
     let p = startPractice(bank, "main", "한식 재료관리, 음식조리 및 위생관리");
     const ids = new Set<string>();
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < bank.length; i++) {
       expect(ids.has(p.currentId)).toBe(false);
       ids.add(p.currentId);
       p = nextPractice(p, bank);
     }
-    expect(ids.size).toBe(60);
+    expect(ids.size).toBe(bank.length);
     expect(p.subject).toBe("한식 재료관리, 음식조리 및 위생관리");
   });
   it("즉시 채점·연속 정답·통계를 저장하며 중복 채점을 방지한다", () => {
