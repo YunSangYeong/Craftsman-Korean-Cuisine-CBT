@@ -1,0 +1,25 @@
+[
+  {
+    "id": "IMPORT-EXAMPLE-001",
+    "subject": "한식 재료관리, 음식조리 및 위생관리",
+    "topic": "위생·안전",
+    "question": "칼과 도마를 생고기용과 채소용으로 구분하는 목적은?",
+    "choices": [
+      "교차오염",
+      "전분의 호화",
+      "단백질의 응고",
+      "지방의 산패"
+    ],
+    "answer": 1,
+    "explanation": "생고기의 미생물이 도마를 통해 가열하지 않는 채소로 옮겨갈 수 있다. 용도별 도마를 구분하고 세척·소독한다.",
+    "difficulty": "하",
+    "year": null,
+    "session": null,
+    "type": "original",
+    "sourceUrl": "https://github.com/YunSangYeong/Craftsman-Korean-Cuisine-CBT/blob/main/scripts/create-bank.py",
+    "verificationStatus": "pending",
+    "reviewNote": "가져오기 양식 예제. 근거 확인 후에만 로컬 승인.",
+    "version": "main",
+    "rights": "이 프로젝트 자체 제작 문항 · CC BY 4.0"
+  }
+]
